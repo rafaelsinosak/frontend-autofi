@@ -1,0 +1,39 @@
+# Node.js with React
+# Build a Node.js project that uses React.
+# Add steps that analyze code, save build artifacts, deploy, and more:
+# https://docs.microsoft.com/azure/devops/pipelines/languages/javascript
+
+trigger:
+  - developer
+
+pool:
+  name: Azure Pipelines
+  demands: npm
+
+steps:
+  - task: Npm@1
+    displayName: "npm install"
+    inputs:
+      verbose: false
+
+  - task: Npm@1
+    displayName: "npm run build"
+    inputs:
+      command: custom
+      verbose: false
+      customCommand: "run build"
+
+  - task: ArchiveFiles@2
+    displayName: "Archive Build"
+    inputs:
+      includeRootFolder: false
+
+  - task: PublishBuildArtifacts@1
+    displayName: "Publish artifacts: drop"
+
+  - task: CopyFilesOverSSH@0
+    displayName: "Securely copy files to the remote machine"
+    inputs:
+      sshEndpoint: "[AWS][DEV] - IP"
+      sourceFolder: "$(System.DefaultWorkingDirectory)/build/"
+      targetFolder: /var/www/html
